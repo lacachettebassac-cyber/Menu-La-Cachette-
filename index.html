@@ -637,6 +637,8 @@ var UI_TEXT = {
 };
 var CAT_TITLES_EN = {'Bières':'Beers','Whiskies':'Whiskies','Vodkas':'Vodka','Tequilas':'Tequila','Rhums':'Rum','Gin':'Gin','Liqueurs':'Liqueurs','Cocktails':'Cocktails','Shots':'Shots','Softs':'Soft Drinks','Tabac':'Tobacco'};
 function catLabel(t){ return SITE_LANG==='en' ? (CAT_TITLES_EN[t]||t) : t; }
+var PRODUCT_NAME_EN = {'Cambodia Rouge':'Cambodia Red','Cambodia Bleue':'Cambodia Blue','Cambodia Verte':'Cambodia Green','Cambodia Bouteille':'Cambodia Bottle'};
+function productLabel(n){ return SITE_LANG==='en' ? (PRODUCT_NAME_EN[n]||n) : n; }
 function applyUiText(){
   var t = UI_TEXT[SITE_LANG];
   var sub = document.querySelector('.subtitle'); if(sub) sub.textContent = t.subtitle;
@@ -679,9 +681,9 @@ function renderMenu(){
          +      '<div><h2 class="category-title">'+esc(catLabel(cat.title))+'</h2></div>'
          +    '</div><div class="products-grid">';
     cat.products.forEach(function(p){
-      html += '<div class="product-card" role="button" tabindex="0" data-name="'+esc(p.name.toLowerCase())+'" aria-label="'+esc(p.name)+', '+esc((p.price||'').replace(/<[^>]+>/g,''))+' '+UI_TEXT[SITE_LANG].dollars+'. '+UI_TEXT[SITE_LANG].detail+'.">'
+      html += '<div class="product-card" role="button" tabindex="0" data-name="'+esc(p.name.toLowerCase())+'" data-real="'+esc(p.name)+'" aria-label="'+esc(productLabel(p.name))+', '+esc((p.price||'').replace(/<[^>]+>/g,''))+' '+UI_TEXT[SITE_LANG].dollars+'. '+UI_TEXT[SITE_LANG].detail+'.">'
            +    '<img class="product-mini" src="'+esc(p.img)+'" data-ic="'+esc(p.ic||'bottle')+'" alt="'+esc(p.name)+'" loading="lazy" onerror="thumbFallback(this)">'
-           +    '<div class="product-info"><div class="product-name">'+esc(p.name)+badgeHtml(p.badge)+'</div></div>'
+           +    '<div class="product-info"><div class="product-name">'+esc(productLabel(p.name))+badgeHtml(p.badge)+'</div></div>'
            +    '<div class="product-price">'+(p.price||'')+'</div>'
            +  '</div>';
     });
@@ -783,11 +785,12 @@ const _ov=document.getElementById('drinkOverlay'),
 function openDrink(card){
   _lastFocus = card;
   const name=card.querySelector('.product-name').childNodes[0].textContent.trim();
+  const realName=card.getAttribute('data-real')||name;
   const sec=card.closest('.category'); let accent='rgba(255,255,255,0.5)';
   if(sec){ for(const c in ACCENT){ if(sec.classList.contains('neon-'+c)){ accent=ACCENT[c]; break; } } }
   _md.style.setProperty('--accent', accent);
   const mini=card.querySelector('.product-mini');
-  const prod=(function(){for(const c of MENU)for(const p of c.products)if(p.name===name)return p;return null;})();
+  const prod=(function(){for(const c of MENU)for(const p of c.products)if(p.name===realName)return p;return null;})();
   _th.innerHTML='';
   if(prod && prod.full){
     const fig=document.createElement('div'); fig.className='drink-figure';
@@ -805,7 +808,7 @@ function openDrink(card){
   setTimeout(function(){ document.querySelectorAll('.product-price').forEach(function(p){ p.style.setProperty('--shine-delay',(Math.random()*6)+'s'); }); },0);
   _nm.textContent=name;
   const pr=card.querySelector('.product-price'); _pr.innerHTML=pr?pr.innerHTML:'';
-  _curName=name; renderDesc(); updateLangBtns();
+  _curName=realName; renderDesc(); updateLangBtns();
   _ov.classList.add('open'); document.body.style.overflow='hidden';
   _md.querySelector('.drink-close').focus();
 }
