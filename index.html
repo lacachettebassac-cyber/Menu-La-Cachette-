@@ -658,6 +658,7 @@ function applyUiText(){
 function setSiteLang(l){
   SITE_LANG = l; try{ localStorage.setItem('siteLang', l); }catch(e){}
   applyUiText(); renderMenu(); renderNav(); setupScrollSpy();
+  if(typeof setupReveal === 'function'){ setupReveal(); } else { document.querySelectorAll('.product-card').forEach(function(c){ c.classList.add('in'); }); }
   if(typeof _lang !== 'undefined'){ _lang = l==='en' ? 'en' : 'fr'; }
 }
 function badgeHtml(b){
@@ -743,14 +744,15 @@ renderMenu(); renderNav(); setupScrollSpy(); setupSearch();
   }
 })();
 // staggered reveal
-(function(){
-  var cards=document.querySelectorAll('.product-card');
+function setupReveal(){
+  var cards=document.querySelectorAll('.product-card:not(.in)');
   if(!('IntersectionObserver' in window)){ cards.forEach(function(c){c.classList.add('in');}); return; }
   var io=new IntersectionObserver(function(en){
     en.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { threshold:0.08, rootMargin:'0px 0px -40px 0px' });
   cards.forEach(function(c,i){ c.style.transitionDelay=(Math.min(i,6)*0.04)+'s'; io.observe(c); });
-})();
+}
+setupReveal();
 
 </script>
 <div class="drink-overlay" id="drinkOverlay" onclick="if(event.target===this)closeDrink()">
