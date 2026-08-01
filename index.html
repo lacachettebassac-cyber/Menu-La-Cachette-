@@ -507,6 +507,37 @@
             border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.55); color: #fff;
             font-size: 1.5rem; line-height: 1; cursor: pointer; }
         .iptv-close:hover { background: rgba(255,255,255,0.15); }
+        .happy-overlay { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center;
+            background: rgba(4,3,10,0.82); padding: 20px; backdrop-filter: blur(6px); animation: ovIn .25s ease both; }
+        .happy-overlay.open { display: flex; }
+        .happy-modal { position: relative; width: 100%; max-width: 360px; text-align: center;
+            padding: 34px 26px 28px; border-radius: 24px; overflow: hidden;
+            background: linear-gradient(160deg, rgba(24,16,10,0.97), rgba(11,10,24,0.98));
+            border: 1px solid rgba(255,215,0,0.55);
+            box-shadow: 0 0 40px -6px rgba(255,215,0,0.45), 0 24px 60px rgba(0,0,0,0.6);
+            animation: mIn .32s cubic-bezier(.2,.8,.3,1) both; }
+        .happy-modal::before { content:''; position:absolute; inset:0; pointer-events:none;
+            background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(255,42,109,0.35) 0%, transparent 60%); }
+        .happy-close { position: absolute; top: 10px; right: 14px; background: none; border: none;
+            color: rgba(255,255,255,0.5); font-size: 1.7rem; line-height: 1; cursor: pointer; transition: color .2s, transform .2s; }
+        .happy-close:hover { color: #fff; transform: rotate(90deg); }
+        .happy-emoji { font-size: 2.6rem; margin-bottom: 6px; filter: drop-shadow(0 0 14px rgba(255,215,0,0.6)); }
+        .happy-title { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; letter-spacing: 2px;
+            text-transform: uppercase; background: linear-gradient(90deg, var(--or), var(--rouge));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            text-shadow: 0 0 24px rgba(255,215,0,0.35); margin-bottom: 6px; }
+        .happy-time { display: inline-block; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.85rem;
+            letter-spacing: 1px; color: var(--or); border: 1px solid rgba(255,215,0,0.5); border-radius: 20px;
+            padding: 5px 16px; margin-bottom: 16px; box-shadow: 0 0 12px rgba(255,215,0,0.2); }
+        .happy-offer { font-family: 'Montserrat', sans-serif; font-size: 1.08rem; line-height: 1.55; color: #fff; margin-bottom: 22px; }
+        .happy-offer strong { color: var(--or); }
+        .happy-cta { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 30px;
+            text-decoration: none; border: none; cursor: pointer; font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; color: #0c0a1f;
+            background: linear-gradient(135deg, var(--or), #ffb347); box-shadow: 0 0 18px rgba(255,215,0,.4);
+            transition: transform .2s, box-shadow .2s; }
+        .happy-cta:hover { transform: translateY(-2px); box-shadow: 0 0 28px rgba(255,215,0,.65); }
+
     
         /* ===== Category nav + search ===== */
         .cat-nav { position: sticky; top: 0; z-index: 30; display: flex; gap: 8px; overflow-x: auto;
@@ -753,6 +784,29 @@ document.getElementById('menu').addEventListener('keydown', e=>{
     function openIptv(){ document.getElementById("iptvOverlay").classList.add("open"); document.body.style.overflow="hidden"; }
     function closeIptv(){ document.getElementById("iptvOverlay").classList.remove("open"); document.body.style.overflow=""; }
     document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeIptv(); });
+    </script>
+
+    <div class="happy-overlay" id="happyOverlay" onclick="if(event.target===this)closeHappy()">
+      <div class="happy-modal" role="dialog" aria-modal="true" aria-labelledby="happyTitle">
+        <button class="happy-close" aria-label="Fermer" onclick="closeHappy()">&times;</button>
+        <div class="happy-emoji">🍸⏰</div>
+        <div class="happy-title" id="happyTitle">Happy Hour</div>
+        <div class="happy-time">18h – 20h</div>
+        <div class="happy-offer">2 boissons achetées <strong>=</strong> la 3ᵉ offerte<br>Tous les jours, sur place.</div>
+        <button class="happy-cta" onclick="closeHappy()">Voir le menu</button>
+      </div>
+    </div>
+    <script>
+    function openHappy(){ document.getElementById("happyOverlay").classList.add("open"); document.body.style.overflow="hidden"; }
+    function closeHappy(){ document.getElementById("happyOverlay").classList.remove("open"); document.body.style.overflow="";
+      try{ localStorage.setItem("happyHourSeen", new Date().toDateString()); }catch(e){} }
+    document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeHappy(); });
+    (function(){
+      try{
+        if(localStorage.getItem("happyHourSeen") === new Date().toDateString()) return;
+      }catch(e){}
+      setTimeout(openHappy, 600);
+    })();
     </script>
 </body>
 </html>
