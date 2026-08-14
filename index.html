@@ -800,6 +800,8 @@ function openDrink(card){
   _md.style.setProperty('--accent', accent);
   const mini=card.querySelector('.product-mini');
   const prod=(function(){for(const c of MENU)for(const p of c.products)if(p.name===realName)return p;return null;})();
+  const catTitle=(function(){for(const c of MENU){ if(c.products.indexOf(prod)>-1) return c.title; } return ''; })();
+  if(typeof gtag==='function'){ gtag('event','view_product',{ product_name: realName, product_category: catTitle }); }
   _th.innerHTML='';
   if(prod && prod.full){
     const fig=document.createElement('div'); fig.className='drink-figure';
