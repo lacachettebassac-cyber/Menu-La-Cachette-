@@ -616,7 +616,7 @@
         <h1 class="sr-only">La Cachette — Bar à cocktails, Bassac Lane, Phnom Penh</h1>
         <img class="logo-img" src="img/logo-header.webp" width="1193" height="301" alt="La Cachette — Cocktails & Spiritueux" fetchpriority="high" onerror="this.outerHTML='&lt;h1 class=&quot;logo-fallback&quot;&gt;La Cachette&lt;/h1&gt;'">
         <p class="subtitle">Cocktails &amp; Spiritueux</p>
-        <button type="button" class="lang-toggle" onclick="setSiteLang(SITE_LANG==='fr'?'en':'fr')" aria-label="Changer de langue / Change language">🌐 <span id="langToggleLabel">EN</span></button>
+        <button type="button" id="langToggle" class="lang-toggle" onclick="setSiteLang(SITE_LANG==='fr'?'en':'fr')" aria-label="EN — Changer de langue / Change language">🌐 <span id="langToggleLabel">EN</span></button>
     </header>
     <nav class="cat-nav" id="catNav" aria-label="Catégories"></nav>
     <div class="search-wrap">
@@ -660,17 +660,17 @@ var UI_TEXT = {
   fr: { subtitle:'Cocktails & Spiritueux', searchPh:'Rechercher un produit…', searchAria:'Rechercher un produit',
         menuAria:'Carte des boissons', searchEmpty:'Aucun produit ne correspond.', catNavAria:'Catégories',
         barAria:'Réseaux sociaux et avis', socialAria:'Réseaux sociaux', review:'★ Avis Google',
-        detail:'Voir le détail', dollars:'dollars', badgeNouveau:'Nouveau', badgePopulaire:'Populaire',
+        detail:'Voir le détail', badgeNouveau:'Nouveau', badgePopulaire:'Populaire',
         close:'Fermer', happyTitle:'Happy Hour', happyTime:'18h – 20h',
         happyOffer:'2 boissons achetées <strong>=</strong> la 3ᵉ offerte', happyNote:'Tous les jours, sur place.',
-        happyCta:'Voir le menu', toggleLabel:'EN' },
+        happyCta:'Voir le menu', toggleLabel:'EN', toggleAria:'EN — Changer de langue / Change language' },
   en: { subtitle:'Cocktails & Spirits', searchPh:'Search a product…', searchAria:'Search a product',
         menuAria:'Drinks menu', searchEmpty:'No product matches.', catNavAria:'Categories',
         barAria:'Social media & reviews', socialAria:'Social media', review:'★ Google Reviews',
-        detail:'View details', dollars:'dollars', badgeNouveau:'New', badgePopulaire:'Popular',
+        detail:'View details', badgeNouveau:'New', badgePopulaire:'Popular',
         close:'Close', happyTitle:'Happy Hour', happyTime:'6 PM – 8 PM',
         happyOffer:'Buy 2 drinks, get <strong>the 3rd free</strong>', happyNote:'Every day, in-house.',
-        happyCta:'View menu', toggleLabel:'FR' }
+        happyCta:'View menu', toggleLabel:'FR', toggleAria:'FR — Switch site to French / Changer de langue' }
 };
 var CAT_TITLES_EN = {'Bières':'Beers','Whiskies':'Whiskies','Vodkas':'Vodka','Tequilas':'Tequila','Rhums':'Rum','Gin':'Gin','Liqueurs':'Liqueurs','Cocktails':'Cocktails','Shots':'Shots','Softs':'Soft Drinks','Tabac':'Tobacco'};
 function catLabel(t){ return SITE_LANG==='en' ? (CAT_TITLES_EN[t]||t) : t; }
@@ -692,6 +692,7 @@ function applyUiText(){
   var hoff = document.querySelector('.happy-offer'); if(hoff) hoff.innerHTML = t.happyOffer + '<br>' + t.happyNote;
   var hcta = document.querySelector('.happy-cta'); if(hcta) hcta.textContent = t.happyCta;
   var tl = document.getElementById('langToggleLabel'); if(tl) tl.textContent = t.toggleLabel;
+  var ltb = document.getElementById('langToggle'); if(ltb) ltb.setAttribute('aria-label', t.toggleAria);
   document.documentElement.lang = SITE_LANG;
 }
 function setSiteLang(l){
@@ -718,7 +719,7 @@ function renderMenu(){
          +      '<div><h2 class="category-title">'+esc(catLabel(cat.title))+'</h2></div>'
          +    '</div><div class="products-grid">';
     cat.products.forEach(function(p){
-      html += '<div class="product-card" role="button" tabindex="0" data-name="'+esc(p.name.toLowerCase())+'" data-real="'+esc(p.name)+'" aria-label="'+esc(productLabel(p.name))+', '+esc((p.price||'').replace(/<[^>]+>/g,''))+' '+UI_TEXT[SITE_LANG].dollars+'. '+UI_TEXT[SITE_LANG].detail+'.">'
+      html += '<div class="product-card" role="button" tabindex="0" data-name="'+esc(p.name.toLowerCase())+'" data-real="'+esc(p.name)+'" aria-label="'+esc(productLabel(p.name))+' '+esc((p.price||'').replace(/<[^>]+>/g,''))+'. '+UI_TEXT[SITE_LANG].detail+'.">'
            +    '<img class="product-mini" src="'+esc(p.img)+'" data-ic="'+esc(p.ic||'bottle')+'" alt="'+esc(p.name)+'" loading="lazy" onerror="thumbFallback(this)">'
            +    '<div class="product-info"><div class="product-name">'+esc(productLabel(p.name))+badgeHtml(p.badge)+'</div></div>'
            +    '<div class="product-price">'+(p.price||'')+'</div>'
