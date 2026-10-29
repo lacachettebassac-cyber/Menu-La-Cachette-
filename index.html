@@ -609,6 +609,7 @@
         .promo-title { display: block; font-weight: 800; font-size: 1rem; letter-spacing: 0.02em; color: var(--orange); text-shadow: 0 0 10px rgba(255,159,28,0.6); }
         .promo-sub { display: block; font-size: 0.82rem; color: rgba(255,255,255,0.82); margin-top: 2px; }
         .promo-pct { font-weight: 900; font-size: 1.25rem; color: #0c0a1f; background: var(--orange); padding: 6px 10px; border-radius: 10px; box-shadow: 0 0 12px var(--orange); white-space: nowrap; }
+        .product-price .price-old { font-size: 0.8rem; opacity: 0.55; text-decoration: line-through; margin: 0 8px 0 0; color: #fff; text-shadow: none; }
         .promo-tag { display: inline-block; margin-left: 10px; vertical-align: middle; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.04em; color: #0c0a1f; background: var(--orange); padding: 3px 8px; border-radius: 999px; box-shadow: 0 0 10px var(--orange); }
         .search-wrap { position: relative; max-width: 920px; margin: 16px auto 2px; padding: 0 16px; }
         .search-input { width: 100%; padding: 12px 44px 12px 16px; border-radius: 14px;
@@ -698,6 +699,16 @@ function productLabel(n){ return SITE_LANG==='en' ? (PRODUCT_NAME_EN[n]||n) : n;
 // Promo Halloween : actif du 29/10/2026 au 31/10/2026 (heure de Phnom Penh, UTC+7)
 var PROMO_START = Date.parse('2026-10-29T00:00:00+07:00'), PROMO_END = Date.parse('2026-10-31T23:59:59+07:00');
 function promoActive(){ var n = Date.now(); return n >= PROMO_START && n <= PROMO_END; }
+function isPromoCat(cat){ return cat.title==='Shots' && promoActive(); }
+// Pendant la promo : l'offre « Découverte » est retirée de la carte
+function promoProducts(cat){ return isPromoCat(cat) ? cat.products.filter(function(p){ return p.name.indexOf('Découverte')!==0; }) : cat.products; }
+// Pendant la promo : prix d'origine barré + prix à -30 %
+function priceHtml(cat,p){
+  if(!isPromoCat(cat)) return p.price||'';
+  var n=parseFloat(p.price); if(isNaN(n)) return p.price||'';
+  var d=Math.round(n*0.7*100)/100;
+  return '<span class="price-old">'+n+'$</span>'+d+'<span>$</span>';
+}
 function renderPromo(){
   var bar = document.getElementById('promoBar'); if(!bar) return;
   var on = promoActive(); bar.hidden = !on; if(!on) return;
@@ -748,11 +759,11 @@ function renderMenu(){
          +      '<div class="category-icon" aria-hidden="true">'+cat.emoji+'</div>'
          +      '<div><h2 class="category-title">'+esc(catLabel(cat.title))+((cat.title==='Shots' && promoActive()) ? '<span class="promo-tag">'+esc(UI_TEXT[SITE_LANG].promoTag)+'</span>' : '')+'</h2></div>'
          +    '</div><div class="products-grid">';
-    cat.products.forEach(function(p){
-      html += '<div class="product-card" role="button" tabindex="0" data-name="'+esc(p.name.toLowerCase())+'" data-real="'+esc(p.name)+'" aria-label="'+esc(productLabel(p.name))+' '+esc((p.price||'').replace(/<[^>]+>/g,''))+'. '+UI_TEXT[SITE_LANG].detail+'.">'
+    promoProducts(cat).forEach(function(p){
+      html += '<div class="product-card" role="button" tabindex="0" data-name="'+esc(p.name.toLowerCase())+'" data-real="'+esc(p.name)+'" aria-label="'+esc(productLabel(p.name))+' '+esc(priceHtml(cat,p).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim())+'. '+UI_TEXT[SITE_LANG].detail+'.">'
            +    '<img class="product-mini" src="'+esc(p.img)+'" data-ic="'+esc(p.ic||'bottle')+'" alt="'+esc(p.name)+'" loading="lazy" onerror="thumbFallback(this)">'
            +    '<div class="product-info"><div class="product-name">'+esc(productLabel(p.name))+badgeHtml(p.badge)+'</div></div>'
-           +    '<div class="product-price">'+(p.price||'')+'</div>'
+           +    '<div class="product-price">'+priceHtml(cat,p)+'</div>'
            +  '</div>';
     });
     html += '</div></section>';
@@ -764,7 +775,7 @@ function renderNav(){
   MENU.forEach(function(cat){
     var ac=ACCENT_NAV[cat.neon]||'#ffffff';
     html += '<button class="cat-pill" type="button" data-target="'+catId(cat.title)+'" style="--pa:'+ac+'" onclick="jumpCat(\''+catId(cat.title)+'\')">'
-         +    '<span aria-hidden="true">'+cat.emoji+'</span> '+esc(catLabel(cat.title))+' <b class="cnt">'+cat.products.length+'</b></button>';
+         +    '<span aria-hidden="true">'+cat.emoji+'</span> '+esc(catLabel(cat.title))+' <b class="cnt">'+promoProducts(cat).length+'</b></button>';
   });
   nav.innerHTML=html;
 }
