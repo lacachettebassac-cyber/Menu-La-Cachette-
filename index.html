@@ -598,6 +598,18 @@
             box-shadow: 0 0 16px -3px var(--pa); }
         .cat-pill.active .cnt { background: rgba(0,0,0,0.22); color: #0c0a1f; }
         .cat-pill:focus-visible { outline: 2px solid rgba(255,255,255,0.7); outline-offset: 2px; }
+        .promo-bar { max-width: 920px; margin: 12px auto 10px; padding: 0 16px; }
+        .promo-bar[hidden] { display: none; }
+        .promo-inner { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border-radius: 14px; cursor: pointer;
+            font-family: inherit; color: #fff; text-align: left;
+            background: linear-gradient(135deg, rgba(255,159,28,0.18), rgba(255,42,109,0.18));
+            border: 1px solid var(--orange); box-shadow: 0 0 14px rgba(255,159,28,0.35), inset 0 0 18px rgba(255,42,109,0.12); }
+        .promo-emoji { font-size: 1.6rem; line-height: 1; }
+        .promo-txt { flex: 1; min-width: 0; }
+        .promo-title { display: block; font-weight: 800; font-size: 1rem; letter-spacing: 0.02em; color: var(--orange); text-shadow: 0 0 10px rgba(255,159,28,0.6); }
+        .promo-sub { display: block; font-size: 0.82rem; color: rgba(255,255,255,0.82); margin-top: 2px; }
+        .promo-pct { font-weight: 900; font-size: 1.25rem; color: #0c0a1f; background: var(--orange); padding: 6px 10px; border-radius: 10px; box-shadow: 0 0 12px var(--orange); white-space: nowrap; }
+        .promo-tag { display: inline-block; margin-left: 10px; vertical-align: middle; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.04em; color: #0c0a1f; background: var(--orange); padding: 3px 8px; border-radius: 999px; box-shadow: 0 0 10px var(--orange); }
         .search-wrap { position: relative; max-width: 920px; margin: 16px auto 2px; padding: 0 16px; }
         .search-input { width: 100%; padding: 12px 44px 12px 16px; border-radius: 14px;
             border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); color: #fff;
@@ -623,6 +635,13 @@
         <input type="search" id="searchInput" class="search-input" placeholder="Rechercher un produit…" aria-label="Rechercher un produit" autocomplete="off">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <div class="search-empty" id="searchEmpty" hidden>Aucun produit ne correspond.</div>
+    </div>
+    <div class="promo-bar" id="promoBar" hidden>
+        <button type="button" class="promo-inner" onclick="jumpCat('cat-shots')">
+            <span class="promo-emoji" aria-hidden="true">🎃</span>
+            <span class="promo-txt"><span class="promo-title" id="promoTitle"></span><span class="promo-sub" id="promoSub"></span></span>
+            <span class="promo-pct">-30%</span>
+        </button>
     </div>
     <main class="container" id="menu" aria-label="Carte des boissons"></main>
     <footer class="footer">
@@ -663,20 +682,31 @@ var UI_TEXT = {
         detail:'Voir le détail', badgeNouveau:'Nouveau', badgePopulaire:'Populaire',
         close:'Fermer', happyTitle:'Happy Hour', happyTime:'18h – 20h',
         happyOffer:'2 boissons achetées <strong>=</strong> la 3ᵉ offerte', happyNote:'Tous les jours, sur place.',
-        happyCta:'Voir le menu', toggleLabel:'EN', toggleAria:'EN — Changer de langue / Change language' },
+        happyCta:'Voir le menu', promoTitle:'Halloween : -30 % sur les shots', promoSub:'Du 29 au 31 octobre · sur place', promoTag:'-30 % Halloween', toggleLabel:'EN', toggleAria:'EN — Changer de langue / Change language' },
   en: { subtitle:'Cocktails & Spirits', searchPh:'Search a product…', searchAria:'Search a product',
         menuAria:'Drinks menu', searchEmpty:'No product matches.', catNavAria:'Categories',
         barAria:'Social media & reviews', socialAria:'Social media', review:'★ Google Reviews',
         detail:'View details', badgeNouveau:'New', badgePopulaire:'Popular',
         close:'Close', happyTitle:'Happy Hour', happyTime:'6 PM – 8 PM',
         happyOffer:'Buy 2 drinks, get <strong>the 3rd free</strong>', happyNote:'Every day, in-house.',
-        happyCta:'View menu', toggleLabel:'FR', toggleAria:'FR — Switch site to French / Changer de langue' }
+        happyCta:'View menu', promoTitle:'Halloween: 30% off all shots', promoSub:'Oct 29 – 31 · in-house', promoTag:'-30% Halloween', toggleLabel:'FR', toggleAria:'FR — Switch site to French / Changer de langue' }
 };
 var CAT_TITLES_EN = {'Bières':'Beers','Whiskies':'Whiskies','Vodkas':'Vodka','Tequilas':'Tequila','Rhums':'Rum','Gin':'Gin','Liqueurs':'Liqueurs','Cocktails':'Cocktails','Shots':'Shots','Softs':'Soft Drinks','Tabac':'Tobacco','Cognac':'Cognac'};
 function catLabel(t){ return SITE_LANG==='en' ? (CAT_TITLES_EN[t]||t) : t; }
 var PRODUCT_NAME_EN = {'Cambodia Rouge':'Cambodia Red','Cambodia Bleue':'Cambodia Blue','Cambodia Verte':'Cambodia Green','Cambodia Bouteille':'Cambodia Bottle'};
 function productLabel(n){ return SITE_LANG==='en' ? (PRODUCT_NAME_EN[n]||n) : n; }
+// Promo Halloween : actif du 29/10/2026 au 31/10/2026 (heure de Phnom Penh, UTC+7)
+var PROMO_START = Date.parse('2026-10-29T00:00:00+07:00'), PROMO_END = Date.parse('2026-10-31T23:59:59+07:00');
+function promoActive(){ var n = Date.now(); return n >= PROMO_START && n <= PROMO_END; }
+function renderPromo(){
+  var bar = document.getElementById('promoBar'); if(!bar) return;
+  var on = promoActive(); bar.hidden = !on; if(!on) return;
+  var t = UI_TEXT[SITE_LANG];
+  document.getElementById('promoTitle').textContent = t.promoTitle;
+  document.getElementById('promoSub').textContent = t.promoSub;
+}
 function applyUiText(){
+  renderPromo();
   var t = UI_TEXT[SITE_LANG];
   var sub = document.querySelector('.subtitle'); if(sub) sub.textContent = t.subtitle;
   var si = document.getElementById('searchInput'); if(si){ si.placeholder = t.searchPh; si.setAttribute('aria-label', t.searchAria); }
@@ -716,7 +746,7 @@ function renderMenu(){
     html += '<section class="category neon-'+esc(cat.neon)+'" id="'+catId(cat.title)+'">'
          +    '<div class="category-header">'
          +      '<div class="category-icon" aria-hidden="true">'+cat.emoji+'</div>'
-         +      '<div><h2 class="category-title">'+esc(catLabel(cat.title))+'</h2></div>'
+         +      '<div><h2 class="category-title">'+esc(catLabel(cat.title))+((cat.title==='Shots' && promoActive()) ? '<span class="promo-tag">'+esc(UI_TEXT[SITE_LANG].promoTag)+'</span>' : '')+'</h2></div>'
          +    '</div><div class="products-grid">';
     cat.products.forEach(function(p){
       html += '<div class="product-card" role="button" tabindex="0" data-name="'+esc(p.name.toLowerCase())+'" data-real="'+esc(p.name)+'" aria-label="'+esc(productLabel(p.name))+' '+esc((p.price||'').replace(/<[^>]+>/g,''))+'. '+UI_TEXT[SITE_LANG].detail+'.">'
